@@ -22,6 +22,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <map>
+#include <set>
 
 #include <algorithm>
 #include <GL/glut.h>
@@ -62,9 +63,20 @@ struct Mesh {
     void adaptativeSimplify (unsigned int numOfPerLeafVertices);
 };
 
-struct GridData {
-    // Information to store in the grid's cells
+struct Representant {
+
+    Vec3 position = Vec3(0,0,0);
+    Vec3 normal = Vec3(0,0,0);
+
 };
+
+struct GridData {
+
+    Representant representant;
+    int nbVerticesPerCell = 0;
+
+};
+
 struct Grid {
     std::vector<GridData> cells;
 
@@ -79,20 +91,164 @@ struct Grid {
     int getIndex(Vec3 pos) { return getCellX(pos) * resolution * resolution + getCellY(pos) * resolution + getCellZ(pos); }
 };
 
+Vec3 minVectorVec3(const std::vector<Vec3> &V) { // Créé un vecteur contenant les x, y, z minimaux du vecteur passé en paramètre
+
+    size_t V_size = V.size();
+    float minX = std::numeric_limits<float>::max();
+    float minY = std::numeric_limits<float>::max();
+    float minZ = std::numeric_limits<float>::max();
+
+    for(size_t i = 0; i < V_size; i++) {
+
+        if(V[i][0] < minX) {
+
+            minX = V[i][0];
+
+        }
+
+        if(V[i][1] < minY) {
+
+            minY = V[i][1];
+
+        }
+
+        if(V[i][2] < minZ) {
+
+            minZ = V[i][2];
+
+        }
+
+    }
+
+    return Vec3(minX,minY,minZ);
+
+}
+
+Vec3 maxVectorVec3(const std::vector<Vec3> &V) { // Créé un vecteur contenant les x, y, z maximaux du vecteur passé en paramètre
+
+    size_t V_size = V.size();
+    float maxX = -std::numeric_limits<float>::max();
+    float maxY = -std::numeric_limits<float>::max();
+    float maxZ = -std::numeric_limits<float>::max();
+
+    for(size_t i = 0; i < V_size; i++) {
+
+        if(V[i][0] > maxX) {
+
+            maxX = V[i][0];
+
+        }
+
+        if(V[i][1] > maxY) {
+
+            maxY = V[i][1];
+
+        }
+
+        if(V[i][2] > maxZ) {
+
+            maxZ = V[i][2];
+
+        }
+
+    }
+
+    return Vec3(maxX,maxY,maxZ);
+
+}
+
+
+
 void Mesh::simplify(unsigned int resolution) {
-    std::cerr << "Simplification to be done." << std::endl;
+    //std::cerr << "Simplification to be done." << std::endl;
     // Compute the cube C that englobes all vertices
 
+    Grid C;
+    Vec3 min = minVectorVec3(vertices);
+    Vec3 max = maxVectorVec3(vertices);
+    C.minPos = min;
+    C.minPos[0] -= 0.15f;
+    C.minPos[1] -= 0.15f;
+    C.minPos[2] -= 0.15f;
+    C.maxPos = max;
+    C.maxPos[0] += 0.15f;
+    C.maxPos[1] += 0.15f;
+    C.maxPos[2] += 0.15f;
+    std::cout<<min<<std::endl;
+    std::cout<<max<<std::endl;
+    C.resolution = resolution;
+
     // Create a grid of size resolution x resolution x resolution in the cube
+
+    int resolution3D = resolution*resolution*resolution;
+    std::vector<GridData> G(resolution3D);
+    C.cells = G;
 
     // For each vertex, add the position and normal to its representant in the grid
     // (Count the number of vertices per cell)
 
+    size_t nbVerticesInMesh = vertices.size();
+
+    for(size_t i = 0; i < nbVerticesInMesh; i++) {
+
+        Vec3 currentVertex = vertices[i];
+        Vec3 currentNormal = normals[i];
+        int index = C.getIndex(currentVertex);
+
+        if(C.cells[index].representant.position == Vec3(0,0,0) && C.cells[index].representant.normal == Vec3(0,0,0)) { // Cas pour gérer l'initialisation de chaque représentant
+
+            C.cells[index].representant.position = currentVertex;
+            C.cells[index].representant.normal = currentNormal;
+            C.cells[index].nbVerticesPerCell++;
+
+        }
+
+        else {
+
+            C.cells[index].representant.position += currentVertex;
+            C.cells[index].representant.normal += currentNormal;
+            C.cells[index].nbVerticesPerCell++;
+
+        }
+
+    }
+
+    std::vector<Vec3> newVertices;
+    std::vector<Vec3> newNormals;
+
+    for(size_t i = 0; i < resolution3D; i++) {  
+
+        Vec3 new_pos = C.cells[i].representant.position / C.cells[i].nbVerticesPerCell; // Divide the position of each representant by the number of vertices in the cell.
+        newVertices.push_back(new_pos); 
+        Vec3 new_norm = C.cells[i].representant.normal;
+        new_norm.normalize(); // Normalize the normals
+        newNormals.push_back(new_norm);
+
+    }
+
     // For each triangle t, set the indices of its vertices to point to representants
     // If 2 vertices share the same representant, remove the triangle
 
-    // Divide the position of each representant by the number of vertices in the cell.
-    // Normalize the normals
+    size_t nbTrianglesInMesh = triangles.size();
+    std::vector<Triangle> newTriangles;
+
+    for(size_t i = 0; i < nbTrianglesInMesh; i++) {
+
+        int index0 = C.getIndex(vertices[triangles[i][0]]);
+        int index1 = C.getIndex(vertices[triangles[i][1]]);
+        int index2 = C.getIndex(vertices[triangles[i][2]]);
+
+        if(index0 != index1 && index0 != index2 && index1 != index2) {
+            
+            newTriangles.push_back(Triangle(index0,index1,index2));
+
+        }
+
+    }
+
+    vertices = newVertices;
+    normals = newNormals;
+    triangles = newTriangles;
 
     // BONUS EXERCICE : Instead of using the mean position of the vertices in the cell,
     // use the QEM proposed in "Out-of-core simplification of large polygonal models."
@@ -427,7 +583,6 @@ void drawTriangleMesh( Mesh const & i_mesh , bool draw_field = false  ) {
         }
     }
     glEnd();
-
 }
 
 void drawMesh( Mesh const & i_mesh , bool draw_field = false ){
@@ -448,8 +603,6 @@ void drawNormals(Mesh const& i_mesh){
 
 //Draw fonction
 void draw () {
-
-
 
     if(displayMode == LIGHTED || displayMode == LIGHTED_WIRE){
 
@@ -655,9 +808,9 @@ int main (int argc, char ** argv) {
     key ('?', 0, 0);
 
     //Mesh loaded with precomputed normals
-    openOFF("data/elephant_n.off", originalMesh.vertices, originalMesh.normals, originalMesh.triangles, originalMesh.triangle_normals);
+    //openOFF("data/elephant_n.off", originalMesh.vertices, originalMesh.normals, originalMesh.triangles, originalMesh.triangle_normals);
     //openOFF("data/unit_sphere_n.off", originalMesh.vertices, originalMesh.normals, originalMesh.triangles, originalMesh.triangle_normals);
-    //openOFF("data/avion_n.off", originalMesh.vertices, originalMesh.normals, originalMesh.triangles, originalMesh.triangle_normals);
+    openOFF("data/avion_n.off", originalMesh.vertices, originalMesh.normals, originalMesh.triangles, originalMesh.triangle_normals);
     //openOFF("data/camel_n.off", originalMesh.vertices, originalMesh.normals, originalMesh.triangles, originalMesh.triangle_normals);
 
     mesh = originalMesh;

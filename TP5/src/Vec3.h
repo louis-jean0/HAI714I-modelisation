@@ -38,6 +38,12 @@ public:
         return Vec3(c1, c2, c3);
     }
 
+    bool operator == (Vec3 const & other) {
+        bool result = false;
+        if(mVals[0] == other[0] && mVals[1] == other[1] && mVals[2] == other[2]) result = true;
+        return result;
+    }
+
     void operator += (Vec3 const & other) {
         mVals[0] += other[0];
         mVals[1] += other[1];
