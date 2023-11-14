@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="css/canvas.css">
+    <script type="text/javascript" src="js/Displayer.js"></script>
+    <script type="text/javascript" src="js/Animation.js"></script>
+</head>
+<body>
+<div id="display"></div>
+<input type="button" id="start_stop_btn" value="Démarrer/arrêter l'animation">
+<script type="text/javascript">
+    window.onload = function () {
+        let d = new Displayer(document.getElementById("display"));
+        let time = 0;
+        let x_pos = 10;
+        let y_pos = 10;
+        let rayonX = 40;
+        let rayonY = 40; 
+        let e = new Ellipse(x_pos, y_pos, rayonX, rayonY);
+        let speedX = 5;
+        let speedY = 0;
+        let gravity = 0.98;
+        let amortissementY = -1;
+        let amortissementX = -1;
+        let width_canvas = d.getCanvas().width, height_canvas = d.getCanvas().height;
+        d.drawLine(0, height_canvas, width_canvas, height_canvas);
+        let animation = new Animation(500,4);
+        let btn = document.getElementById("start_stop_btn");
+        let isRunning = false;
+        btn.addEventListener("click", function() {
+            if(isRunning) {
+                animation.stop();
+                isRunning = false;
+            }
+            else {
+                animation.run();
+                isRunning = true;
+            }
+        });
+        animation.nextStep = function(t) {
+            time += 1/500;
+            speedY += gravity;
+            e.x += speedX;
+            e.y += speedY;
+            if(e.x > width_canvas - e.wx) speedX *= amortissementX; // Retour en arrière si on dépasse les x
+           
+            if(e.y < height_canvas - e.wy) {
+                e.wy = rayonY * 1.5; e.wx = rayonX * 0.5;
+            }
+            else {
+                speedY *= amortissementY; // Rebond
+                e.wx = rayonX * 1.05; e.wy = rayonY * 0.95;
+            }
+            d.init();
+            d.drawFramerate(animation.getFramerate());
+            console.log(animation.getFramerate());
+            d.drawLine(0, height_canvas, width_canvas, height_canvas);
+            d.drawEllipse(e);
+        }
+        animation.run();
+        }
+
+    // Version avec rebonds
+    // window.onload = function () {
+    //     let d = new Displayer(document.getElementById("display"));
+    //     let x_pos = 10;
+    //     let y_pos = 10;
+    //     let rayonX = 40;
+    //     let rayonY = 40; 
+    //     let e = new Ellipse(x_pos, y_pos, rayonX, rayonY);
+    //     let speedX = 5;
+    //     let speedY = 0;
+    //     let gravity = 0.98;
+    //     let amortissementY = -1;
+    //     let amortissementX = -1;
+    //     let width_canvas = d.getCanvas().width, height_canvas = d.getCanvas().height;
+    //     d.drawLine(0, height_canvas, width_canvas, height_canvas);
+    //     let animation = new Animation(500,4);
+    //     animation.nextStep = function(t) {
+    //         speedY += gravity;
+    //         e.x += speedX;
+    //         e.y += speedY;
+    //         if(e.x > width_canvas - e.wx) speedX *= amortissementX; // Retour en arrière si on dépasse les x
+           
+    //         if(e.y < height_canvas - e.wy) {
+    //             e.wy = rayonY * 1.5; e.wx = rayonX * 0.5;
+    //         }
+    //         else {
+    //             speedY *= amortissementY; // Rebond
+    //             e.wx = rayonX * 1.05; e.wy = rayonY * 0.95;
+    //         }
+    //         d.init();
+    //         d.drawLine(0, height_canvas, width_canvas, height_canvas);
+    //         d.drawEllipse(e);
+    //     }
+    //     animation.run();
+    //     }
+    </script>
+</body>
+</html>
