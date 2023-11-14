@@ -79,7 +79,6 @@ struct GridData {
 
 struct Grid {
     std::vector<GridData> cells;
-
     Vec3 minPos, maxPos;
     int resolution;
 
@@ -91,7 +90,7 @@ struct Grid {
     int getIndex(Vec3 pos) { return getCellX(pos) * resolution * resolution + getCellY(pos) * resolution + getCellZ(pos); }
 };
 
-Vec3 minVectorVec3(const std::vector<Vec3> &V) { // Créé un vecteur contenant les x, y, z minimaux du vecteur passé en paramètre
+Vec3 minVectorVec3(const std::vector<Vec3> &V) {                                    // Créé un vecteur contenant les x, y, z minimaux du vecteur passé en paramètre
 
     size_t V_size = V.size();
     float minX = std::numeric_limits<float>::max();
@@ -99,32 +98,20 @@ Vec3 minVectorVec3(const std::vector<Vec3> &V) { // Créé un vecteur contenant 
     float minZ = std::numeric_limits<float>::max();
 
     for(size_t i = 0; i < V_size; i++) {
-
         if(V[i][0] < minX) {
-
             minX = V[i][0];
-
         }
-
         if(V[i][1] < minY) {
-
             minY = V[i][1];
-
         }
-
         if(V[i][2] < minZ) {
-
             minZ = V[i][2];
-
         }
-
     }
-
     return Vec3(minX,minY,minZ);
-
 }
 
-Vec3 maxVectorVec3(const std::vector<Vec3> &V) { // Créé un vecteur contenant les x, y, z maximaux du vecteur passé en paramètre
+Vec3 maxVectorVec3(const std::vector<Vec3> &V) {                                    // Créé un vecteur contenant les x, y, z maximaux du vecteur passé en paramètre
 
     size_t V_size = V.size();
     float maxX = -std::numeric_limits<float>::max();
@@ -132,40 +119,28 @@ Vec3 maxVectorVec3(const std::vector<Vec3> &V) { // Créé un vecteur contenant 
     float maxZ = -std::numeric_limits<float>::max();
 
     for(size_t i = 0; i < V_size; i++) {
-
         if(V[i][0] > maxX) {
-
             maxX = V[i][0];
-
         }
 
         if(V[i][1] > maxY) {
-
             maxY = V[i][1];
-
         }
 
         if(V[i][2] > maxZ) {
-
             maxZ = V[i][2];
-
         }
-
     }
-
     return Vec3(maxX,maxY,maxZ);
-
 }
 
-
-
 void Mesh::simplify(unsigned int resolution) {
-    //std::cerr << "Simplification to be done." << std::endl;
+
     // Compute the cube C that englobes all vertices
 
-    Grid C;
     Vec3 min = minVectorVec3(vertices);
     Vec3 max = maxVectorVec3(vertices);
+    Grid C;
     C.minPos = min;
     C.minPos[0] -= 0.15f;
     C.minPos[1] -= 0.15f;
@@ -174,13 +149,11 @@ void Mesh::simplify(unsigned int resolution) {
     C.maxPos[0] += 0.15f;
     C.maxPos[1] += 0.15f;
     C.maxPos[2] += 0.15f;
-    std::cout<<min<<std::endl;
-    std::cout<<max<<std::endl;
     C.resolution = resolution;
 
     // Create a grid of size resolution x resolution x resolution in the cube
 
-    int resolution3D = resolution*resolution*resolution;
+    size_t resolution3D = resolution*resolution*resolution;
     std::vector<GridData> G(resolution3D);
     C.cells = G;
 
@@ -195,7 +168,8 @@ void Mesh::simplify(unsigned int resolution) {
         Vec3 currentNormal = normals[i];
         int index = C.getIndex(currentVertex);
 
-        if(C.cells[index].representant.position == Vec3(0,0,0) && C.cells[index].representant.normal == Vec3(0,0,0)) { // Cas pour gérer l'initialisation de chaque représentant
+        if(C.cells[index].representant.position == Vec3(0,0,0) && C.cells[index].representant.normal == Vec3(0,0,0)) { 
+            // Cas pour gérer l'initialisation de chaque représentant
 
             C.cells[index].representant.position = currentVertex;
             C.cells[index].representant.normal = currentNormal;
