@@ -62,7 +62,7 @@ class Displayer {
     drawFramerate(framerate) {
         this.g2d.fillStyle = "black";
         this.g2d.font = "20px Arial";
-        this.g2d.fillText(`${framerate.toFixed(2)} FPS`,this.width - 10,this.height - 10);
+        this.g2d.fillText(`${framerate.toFixed(2)} FPS`,10,30);
     }
 
     //dessin en coordonnées canvas
