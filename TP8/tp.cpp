@@ -44,6 +44,7 @@ static bool mouseMovePressed = false;
 static bool mouseZoomPressed = false;
 static int lastX=0, lastY=0, lastZoom=0;
 static bool fullScreen = false;
+int currentScene = 0;
 
 void initLight () {
     GLfloat light_position1[4] = {22.0f, 16.0f, 50.0f, 0.0f};
@@ -61,6 +62,7 @@ void initLight () {
 }
 
 void init () {
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
     camera.resize (SCREENWIDTH, SCREENHEIGHT);
     initLight ();
     // glCullFace (GL_BACK);
@@ -69,6 +71,20 @@ void init () {
     glEnable (GL_DEPTH_TEST);
     glClearColor (0.2f, 0.2f, 0.3f, 1.0f);
     glEnable(GL_COLOR_MATERIAL);
+}
+
+void drawAxes() {
+    glBegin(GL_LINE_STRIP);
+    glColor3f(1,0,0);
+    glVertex3f(0,0,0);
+    glVertex3f(1,0,0);
+    glColor3f(0,1,0);
+    glVertex3f(0,0,0);
+    glVertex3f(0,1,0);
+    glColor3f(0,0,1);
+    glVertex3f(0,0,0);
+    glVertex3f(0,0,1);
+    glEnd();
 }
 
 void drawVoxel(Vec3 center, double side) {
@@ -87,7 +103,9 @@ void drawVoxel(Vec3 center, double side) {
     //glEnd();
 
     glBegin(GL_TRIANGLES);
-    glColor3f(0.5,0.5,0.5);
+
+    //glColor3f(0.5,0.5,0.5);
+    glColor3f(abs(center[0]),abs(center[1]),abs(center[2]));
 
     // Face avant
     glNormal3f(0.0f, 0.0f, -1.0f); // Normale de la face avant
@@ -152,38 +170,97 @@ void drawVoxel(Vec3 center, double side) {
     glEnd();
 }
 
-void drawSphereVolumic(Vec3 center, double rayon, double resolution) {
+void drawGrid(Vec3 origin, double resolution) {
     Voxel v;
     v.side = 1/resolution;
     for(int i = 0; i < resolution; i++) {
         for(int j = 0; j < resolution; j++) {
             for(int k = 0; k < resolution; k++) {
                 v.center = Vec3(i * v.side, j * v.side, k * v.side);
-                if((center - v.center).length() < rayon) {
-                    drawVoxel(v.center,v.side);
-                }
-                //drawVoxel(v.center,v.side);
+                drawVoxel(v.center,v.side);
             }
         }
     }
-    
 }
 
+void drawSphereVolumic(Vec3 center, double rayon, double resolution) {
+    Voxel v;
+    v.side = 2 * rayon / resolution;
+    for(int i = 0; i < resolution; i++) {
+        for(int j = 0; j < resolution; j++) {
+            for(int k = 0; k < resolution; k++) {
+                v.center = Vec3(center[0] - rayon + i * v.side + v.side / 2,
+                center[1] - rayon + j * v.side + v.side / 2,
+                center[2] - rayon + k * v.side + v.side / 2);
+                if((center - v.center).length() <= rayon) {
+                    drawVoxel(v.center, v.side);
+                }
+            }
+        }
+    }
+}
+
+void drawCylinderVolumic(Vec3 axisOrigin, Vec3 axisVector, double rayon, double resolution) {
+    Voxel v;
+    v.side = 2 * rayon / resolution;
+    //std::cout<<v.side<<std::endl;
+    double cylinderHeight = axisVector.length();
+    //std::cout<<cylinderHeight<<std::endl;
+
+    for(int i = 0; i < resolution; i++) {
+        for(int j = 0; j < resolution; j++) {
+            for(int k = 0; k < resolution; k++) {
+                v.center = Vec3(axisOrigin[0] - rayon + i * v.side + v.side / 2,
+                                axisOrigin[1] - rayon + j * v.side + v.side / 2,
+                                axisOrigin[2] + k * v.side + v.side / 2);
+                double dx = v.center[0] - axisOrigin[0];
+                double dy = v.center[1] - axisOrigin[1];
+                if(dx * dx + dy * dy <= rayon * rayon) {
+                    if(v.center[2] >= axisOrigin[2] && v.center[2] <= axisOrigin[2] + cylinderHeight) {
+                        //std::cout<<v.center[2]<<std::endl;
+                        drawVoxel(v.center,v.side);
+                    }
+                }
+            }
+        }
+    }
+}
+
+
 void draw() {
-    drawSphereVolumic(Vec3(0,0,0),1,100);
 }
 
 void display () {
-    glLoadIdentity ();
-    glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    camera.apply ();
-    draw();
-    glFlush ();
+    glLoadIdentity();
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    camera.apply();
+    drawAxes();
+    switch(currentScene) {
+        case 1:
+            drawVoxel(Vec3(0,0,0),1);
+            break;
+
+        case 2:
+            drawGrid(Vec3(0,0,0),5);
+            break;
+
+        case 3:
+            drawSphereVolumic(Vec3(0,0,0),1,50);
+            break;
+
+        case 4:
+            drawCylinderVolumic(Vec3(0,0,0),Vec3(0,5,0),1,50);
+            break;
+
+        default:
+            break;
+    }
+    glFlush();
     glutSwapBuffers();
 }
 
 void idle () {
-    glutPostRedisplay ();
+    glutPostRedisplay();
 }
 
 void key (unsigned char keyPressed, int x, int y) {
@@ -206,6 +283,22 @@ void key (unsigned char keyPressed, int x, int y) {
             glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
         else
             glPolygonMode (GL_FRONT_AND_BACK, GL_LINE);
+        break;
+
+    case '1':
+        currentScene = 1;
+        break;
+
+    case '2':
+        currentScene = 2;
+        break;
+
+    case '3':
+        currentScene = 3;
+        break;
+
+    case '4':
+        currentScene = 4;
         break;
 
     default:
@@ -261,7 +354,7 @@ void motion (int x, int y) {
 
 
 void reshape(int w, int h) {
-    camera.resize (w, h);
+    camera.resize(w, h);
 }
 
 int main (int argc, char ** argv) {
@@ -273,8 +366,8 @@ int main (int argc, char ** argv) {
     glutInitWindowSize (SCREENWIDTH, SCREENHEIGHT);
     window = glutCreateWindow ("TP8 HAI714I");
 
-    init ();
-    glutIdleFunc (idle);
+    init();
+    glutIdleFunc(idle);
 
     glutDisplayFunc(display);
     glutKeyboardFunc (key);

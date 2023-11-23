@@ -49,6 +49,12 @@ public:
 
     //Calcul de la norme d'un vecteur
     float length() const { return sqrt(squareLength()); }
+
+    //Calculer le produit scalaire entre 2 vecteurs
+    static float dot(Vec3 const &a, Vec3 const &b) {
+        float res = a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+        return res;
+    }
 };
 
 
