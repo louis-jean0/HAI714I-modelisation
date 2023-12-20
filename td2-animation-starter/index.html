@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="css/webgl.css">
+    <script type="text/javascript" src="js/Coord2D.js"></script>
+    <script type="text/javascript" src="js/Colors.js"></script>
+    <script type="text/javascript" src="js/Skeletal.js"></script>
+    <script type="text/javascript" src="js/Displayer.js"></script>
+</head>
+<body>
+    <div id="display"></div>
+    
+    <script type="text/javascript">
+        let displayer;
+        let snake = undefined;
+
+        function initComputeAndRender() {
+            display = document.getElementById("display");
+            displayer = new Displayer(display);
+            snake = new Squelette("p");
+            let dimension = snake.getModelBox();
+            //setModelSpace(minX, minY, maxX, maxY)
+            displayer.setModelSpace(dimension.minX, dimension.minY, dimension.maxX, dimension.maxY);
+
+            let interactor = new Interactor(snake, displayer);
+
+            snake.draw(displayer);
+        }
+        
+        window.onload = initComputeAndRender;
+
+    </script>
+</body>
+</html>
