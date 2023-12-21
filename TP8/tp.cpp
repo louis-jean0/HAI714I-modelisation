@@ -226,6 +226,80 @@ void drawCylinderVolumic(Vec3 axisOrigin, Vec3 axisVector, double rayon, double 
     }
 }
 
+void drawIntersectionSphereCylinder(Vec3 centreSphere, double rayonSphere, Vec3 axisOriginCylinder, Vec3 axisVectorCylinder, double rayonCylinder, double resolution) {
+    Voxel v;
+    v.side = 2 * std::max(rayonSphere, rayonCylinder) / resolution;
+    double cylinderHeight = axisVectorCylinder.length();
+
+    for(int i = 0; i < resolution; i++) {
+        for(int j = 0; j < resolution; j++) {
+            for(int k = 0; k < resolution; k++) {
+                v.center = Vec3(axisOriginCylinder[0] - rayonCylinder + i * v.side + v.side / 2,
+                                axisOriginCylinder[1] - rayonCylinder + j * v.side + v.side / 2,
+                                axisOriginCylinder[2] + k * v.side + v.side / 2);
+
+                double dx = v.center[0] - axisOriginCylinder[0];
+                double dy = v.center[1] - axisOriginCylinder[1];
+                bool inCylinder = dx * dx + dy * dy <= rayonCylinder * rayonCylinder && v.center[2] >= axisOriginCylinder[2] && v.center[2] <= axisOriginCylinder[2] + cylinderHeight;
+                bool inSphere = (centreSphere - v.center).length() <= rayonSphere;
+
+                if (inCylinder && inSphere) {
+                    drawVoxel(v.center, v.side);
+                }
+            }
+        }
+    }
+}
+
+void drawSoustractionSphereCylinder(Vec3 centreSphere, double rayonSphere, Vec3 axisOriginCylinder, Vec3 axisVectorCylinder, double rayonCylinder, double resolution) {
+    Voxel v;
+    v.side = 2 * std::max(rayonSphere, rayonCylinder) / resolution;
+    double cylinderHeight = axisVectorCylinder.length();
+
+    for(int i = 0; i < resolution; i++) {
+        for(int j = 0; j < resolution; j++) {
+            for(int k = 0; k < resolution; k++) {
+                v.center = Vec3(axisOriginCylinder[0] - rayonCylinder + i * v.side + v.side / 2,
+                                axisOriginCylinder[1] - rayonCylinder + j * v.side + v.side / 2,
+                                axisOriginCylinder[2] + k * v.side + v.side / 2);
+
+                double dx = v.center[0] - axisOriginCylinder[0];
+                double dy = v.center[1] - axisOriginCylinder[1];
+                bool inCylinder = dx * dx + dy * dy <= rayonCylinder * rayonCylinder && v.center[2] >= axisOriginCylinder[2] && v.center[2] <= axisOriginCylinder[2] + cylinderHeight;
+                bool inSphere = (centreSphere - v.center).length() <= rayonSphere;
+
+                if (inSphere && !inCylinder) {
+                    drawVoxel(v.center, v.side);
+                }
+            }
+        }
+    }
+}
+
+void drawUnionSphereCylinder(Vec3 centreSphere, double rayonSphere, Vec3 axisOriginCylinder, Vec3 axisVectorCylinder, double rayonCylinder, double resolution) {
+    Voxel v;
+    v.side = 2 * std::max(rayonSphere, rayonCylinder) / resolution;
+    double cylinderHeight = axisVectorCylinder.length();
+
+    for(int i = 0; i < resolution; i++) {
+        for(int j = 0; j < resolution; j++) {
+            for(int k = 0; k < resolution; k++) {
+                v.center = Vec3(axisOriginCylinder[0] - rayonCylinder + i * v.side + v.side / 2,
+                                axisOriginCylinder[1] - rayonCylinder + j * v.side + v.side / 2,
+                                axisOriginCylinder[2] + k * v.side + v.side / 2);
+
+                double dx = v.center[0] - axisOriginCylinder[0];
+                double dy = v.center[1] - axisOriginCylinder[1];
+                bool inCylinder = dx * dx + dy * dy <= rayonCylinder * rayonCylinder && v.center[2] >= axisOriginCylinder[2] && v.center[2] <= axisOriginCylinder[2] + cylinderHeight;
+                bool inSphere = (centreSphere - v.center).length() <= rayonSphere;
+
+                if (inCylinder || inSphere) {
+                    drawVoxel(v.center, v.side);
+                }
+            }
+        }
+    }
+}
 
 void draw() {
 }
@@ -249,7 +323,20 @@ void display () {
             break;
 
         case 4:
-            drawCylinderVolumic(Vec3(0,0,0),Vec3(0,5,0),1,50);
+            drawCylinderVolumic(Vec3(0,0,0),Vec3(0,5,3),1,100);
+            //drawCylinderVolumic(Vec3(-1,-1,-1),Vec3(2,2,2),1,50);
+            break;
+
+        case 5:
+            drawIntersectionSphereCylinder(Vec3(0,0,0), 2, Vec3(-0.5,0,0), Vec3(2,2,2), 1, 50);
+            break;
+
+        case 6:
+            drawSoustractionSphereCylinder(Vec3(0,0,0), 1, Vec3(0.5,0,0), Vec3(0,1,0), 0.8, 50);
+            break;
+
+        case 7:
+            drawUnionSphereCylinder(Vec3(1, 1, 1), 1.5, Vec3(0, 0, 0), Vec3(0, 1, 0), 1, 50);
             break;
 
         default:
@@ -299,6 +386,18 @@ void key (unsigned char keyPressed, int x, int y) {
 
     case '4':
         currentScene = 4;
+        break;
+    
+    case '5':
+        currentScene = 5;
+        break;
+
+    case '6':
+        currentScene = 6;
+        break;
+
+    case '7':
+        currentScene = 7;
         break;
 
     default:

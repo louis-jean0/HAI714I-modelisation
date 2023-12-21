@@ -1,15 +1,13 @@
 const Move = { snake: 0, rigide: 1, orientation: 2, libre: 3 };
 const Sens = { backward: 0, forward: 1, mixte: 2 };
 
-
-
 class Interactor {
     constructor(p_chain, p_displayer) {
         this.displayer = p_displayer;
         this.chain = p_chain;
         this.state = "idle";
         this.needRefreshing = false;
-        this.currentMove = new SnakeMove();
+        this.currentMove = new BlocMove();
 
         this.control("mousedown", p_displayer.getCanvas(), this, this.handlePress);
         this.control("mousemove", p_displayer.getCanvas(), this, this.handleMove);
@@ -38,7 +36,7 @@ class Interactor {
        //console.log("handlePress - selection = " + msgNewSelection + ", this.selection = " + msgOldSelection + ", state =  " + this.state);
         this.needRefreshing = false;
         this.previousLocation = { x: e.offsetX, y: e.offsetY };
-        this.currentMove = new SnakeMove();
+        this.currentMove = new BlocMove();
         if (this.state === "idle" && selection) {
             this.state = "prepareMove";
             this.changeSelection(selection);

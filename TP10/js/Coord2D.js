@@ -65,8 +65,6 @@ class Coord2D {
         return result;
     }
 
-
-
     plus(a) {
         this.x += a.x;
         this.y += a.y;

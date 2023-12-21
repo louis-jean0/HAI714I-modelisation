@@ -4,7 +4,7 @@ class CMove {
 }
 
 //déplacement simple ou déplacement de type snake
-class SnakeMove extends CMove{
+class SnakeMove extends CMove {
     initMove(p_e, p_previousLocation, p_node, d) {
         this.displayer = d;
         let delta = new Coord2D(p_e.offsetX - p_previousLocation.x, p_e.offsetY - p_previousLocation.y);
@@ -22,7 +22,7 @@ class SnakeMove extends CMove{
 }
 
 //déplacement rigide
-class BlocMove extends CMove{
+class BlocMove extends CMove {
  //todo
     initMove(p_e, p_previousLocation, p_node, d) {
         this.displayer = d;
@@ -39,8 +39,39 @@ class BlocMove extends CMove{
 
 //rotation
 class AngleMove extends CMove {
- //todo
+    initMove(p_e, p_previousLocation, p_node, d) {
+        this.displayer = d;
+        let centerNodePos = p_node.getCoordShared(0);
+        let mousePos = new Coord2D(p_e.offsetX, p_e.offsetY);
+        let angleChange = this.calculateAngleChange(mousePos, centerNodePos);
+        let edges = p_node.getEdges(this.sens);
+        for (let edge of edges) {
+            let connectedNode = this.sens == Sens.forward ? edge.to : edge.from;
+            this.rotateNodes(connectedNode, angleChange);
+        }
+        
+    }
+    
+    calculateAngleChange(mousePos, centerNodePos) {
+        let directionVector = Coord2D.vecteur(centerNodePos, mousePos);
+        let angleChange = directionVector.alpha();
+        console.log("Angle : ",angleChange);
+        return angleChange;
+    }
+    
+    rotateNodes(centerNode, angleChange, d) {
+        let edges = centerNode.getEdges();
+        for (let edge of edges) {
+            let connectedNode = this.sens == Sens.forward ? edge.to : edge.from;
+            let currentPos = connectedNode.getCoordShared(0);
+            let rotatedPos = currentPos.rotateZ(angleChange, centerNode.getCoordShared(0));
+            console.log(rotatedPos);
+            let delta = Coord2D.soustraction(rotatedPos, currentPos);
+            connectedNode.moveOnCanvas(delta, d);
+        }
+    } 
 }
+    
 
 class Node {
     cm; //coordonnées dans le modèle
@@ -59,6 +90,7 @@ class Node {
     moveOnCanvas(delta, d) {
         this.cc.plus(delta);
         this.needsUpdate = { ro: true, alpha: true };
+        console.log(this.cc);
     }
 
     drawIn(displayer) {
@@ -258,7 +290,7 @@ class Squelette {
         lx = [x0, x0, x0, x0 - 0.2, x0 - 0.3];
         ly = [ 4, 2.25, 0.4, 0.3, 0.25];
         i = this.nodes.length;
-       this.createNodesFromArrays(this.margX, this.margY, lx, ly, "rl");
+        this.createNodesFromArrays(this.margX, this.margY, lx, ly, "rl");
         j = this.nodes.length;
         this.createEdges(i, j);
         this.addEdge(0, i);

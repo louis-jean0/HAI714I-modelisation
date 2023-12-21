@@ -134,16 +134,15 @@ int display(const  GMap3D& gmap)
     glBindVertexArray(VertexArrayID);
 
     // Create and compile our GLSL program from the shaders
-    GLuint programID = LoadShaders( "vertex_shader.glsl", "fragment_shader.glsl" );
+    GLuint programID = LoadShaders( "../src/vertex_shader.glsl", "../src/fragment_shader.glsl" );
 
     // Get a handle for our "MVP" uniform
     GLuint MatrixID = glGetUniformLocation(programID, "MVP");
     GLuint ViewMatrixID = glGetUniformLocation(programID, "V");
     GLuint ModelMatrixID = glGetUniformLocation(programID, "M");
 
-
     // transform the gmap into set of triangles
-    // TOCOMPLETE
+    //TOCOMPLETE
     // for the property, you can first use a random value for each vertices.
 
     std::vector<unsigned short> indices; //Triangles concaténés dans une liste
