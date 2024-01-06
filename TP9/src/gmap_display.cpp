@@ -18,9 +18,9 @@ GLFWwindow* window;
 #include <glm/gtx/transform.hpp>
 using namespace glm;
 
-#include <common/shader.hpp>
-#include <common/objloader.hpp>
-#include <common/vboindexer.hpp>
+#include "../common/shader.hpp"
+#include "../common/objloader.hpp"
+#include "../common/vboindexer.hpp"
 
 #include <algorithm>
 

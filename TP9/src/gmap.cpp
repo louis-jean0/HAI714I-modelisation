@@ -172,10 +172,6 @@ int GMap::eulercharacteristic() const
     return characteristic;
 }
 
-#endif
-/*------------------------------------------------------------------------*/
-
-
 /*
     Check if a dart of the orbit representing the vertex has already been 
     associated with a value in propertydict. If yes, return this dart, else
@@ -191,6 +187,9 @@ GMap::id_t EmbeddedGMap<T>::get_embedding_dart(id_t dart) const {
     }
     return dart;
 }
+
+#endif
+/*------------------------------------------------------------------------*/
 
 /*------------------------------------------------------------------------*/
 

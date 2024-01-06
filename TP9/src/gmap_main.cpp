@@ -149,8 +149,6 @@ void question6b() {
     display(mgmap);
 }
 
-
-
 void question7(){
     GMap3D mgmap = GMap3D::cube();
     mgmap.print_alphas();
